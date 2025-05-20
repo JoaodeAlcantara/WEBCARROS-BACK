@@ -8,56 +8,61 @@ datasource db {
 }
 
 model Users {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(255)
-  email String @unique @db.VarChar(255)
-  password String @db.VarChar(100)
-  cars Cars[]
-  createdAt DateTime @default(now())
+  id        Int         @id @default(autoincrement())
+  name      String      @db.VarChar(255)
+  email     String      @unique @db.VarChar(255)
+  password  String      @db.VarChar(100)
+  createdAt DateTime    @default(now())
+  cars      Cars[]
   favorites Favorites[]
 }
 
 model Cars {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(55)
-  model String @db.VarChar(55)
-  transmission TransmissionType
-  carImages CarImages[]
-  year String @db.VarChar(9)
-  kilometersRun Float
-  price Decimal @db.Decimal(10, 2)
-  category CategoryType
-  fuel FuelType
-  city String @db.VarChar(55)
-  contactPhone String @db.VarChar(55)
-  description String @db.Text
-  status StateType @default(disponivel)
-  previousStatus StateType @default(disponivel)
-  views Int @default(0)
-  slug String @unique @db.VarChar(255)
-  userId Int
-  user Users @relation(fields: [userId], references: [id])
-  favorites Favorites[]
-  createdAt DateTime @default(now())
+  id             Int              @id @default(autoincrement())
+  name           String           @db.VarChar(55)
+  model          String           @db.VarChar(55)
+  transmission   TransmissionType
+  year           String           @db.VarChar(9)
+  kilometersRun  Float
+  price          Decimal          @db.Decimal(10, 2)
+  category       CategoryType
+  fuel           FuelType
+  city           String           @db.VarChar(55)
+  contactPhone   String           @db.VarChar(55)
+  description    String           @db.Text
+  status         StateType        @default(disponivel)
+  previousStatus StateType        @default(disponivel)
+  views          Int              @default(0)
+  slug           String           @unique @db.VarChar(255)
+  userId         Int
+  createdAt      DateTime         @default(now())
+  carImages      CarImages[]
+  user           Users            @relation(fields: [userId], references: [id])
+  favorites      Favorites[]
+
+  @@index([userId], map: "Cars_userId_fkey")
 }
 
 model CarImages {
-  id Int @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   filename String @db.VarChar(255)
-  carId Int
-  car Cars @relation(fields: [carId], references: [id])
+  carId    Int
+  car      Cars   @relation(fields: [carId], references: [id])
+
+  @@index([carId], map: "CarImages_carId_fkey")
 }
 
 model Favorites {
-  id Int @id @default(autoincrement())
+  id     Int       @id @default(autoincrement())
   userId Int
-  user Users @relation(fields: [userId], references: [id])
-  carId Int
-  car Cars @relation(fields: [carId], references: [id])
-  group String? @db.VarChar(50)
+  carId  Int
+  group  String?   @db.VarChar(50)
   status StateType @default(disponivel)
+  car    Cars      @relation(fields: [carId], references: [id])
+  user   Users     @relation(fields: [userId], references: [id])
 
   @@unique([userId, carId], name: "userId_carId_unique")
+  @@index([carId], map: "Favorites_carId_fkey")
 }
 
 enum CategoryType {
@@ -95,7 +100,7 @@ enum StateType {
   deletado
 }
 
-enum TransmissionType  {
+enum TransmissionType {
   MANUAL
   AUTOMATICO
   AUTOMATIZADO
