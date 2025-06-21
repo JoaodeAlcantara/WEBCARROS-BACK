@@ -67,20 +67,27 @@ const favoriteRepository = {
         const favorites = await prisma.favorites.findMany({
             where: {
                 userId: id,
-                group: { not: null }
+                group: { not: null },
             },
             include: {
                 car: {
-                    include: { carImages: true }
+                    include: { carImages: true },
                 }
             }
         });
-        return favorites
+        
+        return favorites.filter(fav => 
+            fav.car && ['disponivel', 'vendido'].includes(fav.car.status)
+        );
     },
     // busca um grupo especifico 
     getByGroupAndUserId: async (group, id) => {
         const favorites = await prisma.favorites.findMany({
-            where: { group: group, userId: id },
+            where: { 
+                group: group, 
+                userId: id,
+                status: { in: ['disponivel', 'vendido'] }
+            },
             include: {
                 car: {
                     include: { carImages: true }
