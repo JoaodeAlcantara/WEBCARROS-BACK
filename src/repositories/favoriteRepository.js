@@ -64,27 +64,23 @@ const favoriteRepository = {
     },
     // busca todos os favoritos 
     getWithGroupByUserId: async (id) => {
-        const favorites = await prisma.favorites.findMany({
-            where: {
-                userId: id,
-                group: { not: null },
-            },
-            include: {
-                car: {
-                    include: { carImages: true },
-                }
-            }
-        });
-        
-        return favorites.filter(fav => 
-            fav.car && ['disponivel', 'vendido'].includes(fav.car.status)
-        );
+        const favorites = await prisma.$queryRaw`
+        SELECT f.*, c.*, 
+            (SELECT i.filename from carImages i WHERE i.carId = c.id LIMIT 1) AS images
+        FROM favorites f
+        INNER JOIN cars c
+            ON f.carId = c.id
+        WHERE f.userId = 2
+            AND c.status in ('disponivel', 'vendido') 
+            AND f.group IS NOT NULL;
+        `;
+        return favorites
     },
     // busca um grupo especifico 
     getByGroupAndUserId: async (group, id) => {
         const favorites = await prisma.favorites.findMany({
-            where: { 
-                group: group, 
+            where: {
+                group: group,
                 userId: id,
                 status: { in: ['disponivel', 'vendido'] }
             },
@@ -118,7 +114,7 @@ const favoriteRepository = {
     updateState: async (id, data) => {
         const favorites = await prisma.favorites.update({
             where: { id: id },
-            data: {...data}
+            data: { ...data }
         });
         return favorites
     },

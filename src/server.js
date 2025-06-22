@@ -14,9 +14,6 @@ app.use('/files', express.static('./src/public/uploads'));
 app.use(routesPublic);
 app.use(auth.auth, routesPrivate);
 
-
-
-
 app.listen(config.port, config.host, () => {
     console.log(`http://${config.host}:${config.port}`)
 })

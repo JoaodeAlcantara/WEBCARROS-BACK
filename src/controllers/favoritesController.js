@@ -154,6 +154,8 @@ const favoritesController = {
         try {
             const favorites = await favoriteRepository.getWithGroupByUserId(req.user.id);
 
+            console.log('log', favorites)
+
             const formatedFavorites = {};
 
             if (favorites && favorites.length > 0) {
@@ -184,7 +186,7 @@ const favoritesController = {
                 return res.status(200).json({
                     ok: true,
                     status: 200,
-                    message: 'Listas de favoritos encontrados com sucesso',
+                    message: 'Listas de favoritos encontrados com sucesso com codigo SQL',
                     favorites: orderedFavorites
                 });
             }
