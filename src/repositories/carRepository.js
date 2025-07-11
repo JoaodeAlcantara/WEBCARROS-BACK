@@ -3,8 +3,8 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const carRepository = {
-    create: async (data) => {
-        const car = await prisma.cars.create({
+    create: async (data, client = prisma) => {
+        const car = await client.cars.create({
             data: data
         });
         return car

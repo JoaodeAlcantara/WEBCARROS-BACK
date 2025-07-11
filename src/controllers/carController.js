@@ -4,6 +4,9 @@ import { verifyData } from "../utils/functions.js";
 import slugify from "slugify";
 import fs from "fs-extra";
 import favoriteRepository from "../repositories/favoriteRepository.js";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const carController = {
     create: async (req, res) => {
@@ -37,42 +40,32 @@ const carController = {
         const slug = slugify(`${data.name} ${data.model} ${data.year} ${Date.now()}`, { lower: true, strict: true });
 
         try {
-            const newCar = await carRepository.create({
-                ...data,
-                kilometersRun: parseFloat(data.kilometersRun),
-                slug,
-                userId: req.user.id
-            });
+            await prisma.$transaction(async (trx) => {
+                const newCar = await carRepository.create({
+                    ...data,
+                    kilometersRun: parseFloat(data.kilometersRun),
+                    slug,
+                    userId: req.user.id
+                }, trx);
 
-            if (newCar) {
+                if (!newCar) throw new Error('Erro ao adicionar o carro');
+
                 const images = req.files.map(img => ({
                     filename: img.filename,
                     carId: newCar.id
                 }));
 
-                const carImage = await carImagesRepository.create(images);
+                const carImage = await carImagesRepository.create(images, trx);
 
-                if (!carImage) {
-                    return res.status(400).json({
-                        ok: false,
-                        status: 400,
-                        message: 'Erro ao adicionar imagens'
-                    });
-                }
-
+                if (!carImage) throw new Error('Erro ao adicionar imagens')
+                
                 res.status(201).json({
                     ok: true,
                     status: 201,
                     message: 'Carro adicionado com sucesso',
                     car: { ...newCar, carImage: images }
                 });
-            } else {
-                res.status(400).json({
-                    ok: false,
-                    status: 400,
-                    message: 'Erro ao adicionar carro'
-                });
-            }
+            });
 
         } catch (error) {
             console.log(error)
