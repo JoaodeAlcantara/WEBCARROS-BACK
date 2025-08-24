@@ -154,8 +154,6 @@ const favoritesController = {
         try {
             const favorites = await favoriteRepository.getWithGroupByUserId(req.user.id);
 
-            console.log('log', favorites)
-
             const formatedFavorites = {};
 
             if (favorites && favorites.length > 0) {
@@ -239,7 +237,7 @@ const favoritesController = {
         const id = +req.params.id;
 
         try {
-            const favorite = !!(await favoriteRepository.getById(id));
+            const favorite = (await favoriteRepository.getById(id));
 
             if (favorite) {
                 await favoriteRepository.deleteItem(id);

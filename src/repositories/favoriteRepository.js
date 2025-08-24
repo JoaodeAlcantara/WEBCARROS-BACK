@@ -63,14 +63,16 @@ const favoriteRepository = {
         return favorites
     },
     // busca todos os favoritos 
-    getWithGroupByUserId: async (id) => {
+    getWithGroupByUserId: async (userId) => {
         const favorites = await prisma.$queryRaw`
-        SELECT f.*, c.*, 
+        SELECT 
+            f.id, f.userId, f.carId, f.group, f.status, 
+            c.name, c.model, c.year, c.kilometersRun, c.price, c.city, c.slug, c.views,
             (SELECT i.filename from carImages i WHERE i.carId = c.id LIMIT 1) AS images
         FROM favorites f
         INNER JOIN cars c
             ON f.carId = c.id
-        WHERE f.userId = 2
+        WHERE f.userId = ${userId}
             AND c.status in ('disponivel', 'vendido') 
             AND f.group IS NOT NULL;
         `;
